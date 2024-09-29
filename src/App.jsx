@@ -16,48 +16,44 @@ const App = () => {
   useEffect(() => {
     // When new data arrives from WebSocket, update chartData
     if (data.length > 0) {
-      setChartData(data); // Update chart data with live data
+      setChartData(data);
       localStorage.setItem(selectedCoin, JSON.stringify(data));
     }
   }, [data, selectedCoin]);
 
+  // Function to handle coin change
   const handleCoinChange = (coin) => {
-    // Clear chart data before switching to prevent mixing data from different coins
-    setChartData([]); 
     setSelectedCoin(coin);
 
-    // Check if there's existing data in localStorage for the selected coin
+    // Retrieve data from localStorage if available
     const savedData = localStorage.getItem(coin);
     if (savedData) {
       setChartData(JSON.parse(savedData));
+    } else {
+      setChartData([]);
     }
   };
+
+  useEffect(() => {
+    // Load saved data when the component mounts or when the selected coin changes
+    const savedData = localStorage.getItem(selectedCoin);
+    if (savedData) {
+      setChartData(JSON.parse(savedData));
+    }
+  }, [selectedCoin]);
 
   return (
     <div className="app-container">
       <h1>Binance Market Data</h1>
-      
-        <label htmlFor="coin-selector">Select Coin:</label>
-        <CoinSelector 
-          coins={coins} 
-          selectedCoin={selectedCoin} 
-          onSelect={handleCoinChange} 
-          id="coin-selector"
-        />
-        
-        <label htmlFor="interval-selector">
-          Interval:
-          <select 
-            id="interval-selector"
-            value={interval} 
-            onChange={e => setInterval(e.target.value)}
-          >
-            <option value="1m">1 Minute</option>
-            <option value="3m">3 Minutes</option>
-            <option value="5m">5 Minutes</option>
-          </select>
-        </label>
-      
+      <CoinSelector coins={coins} selectedCoin={selectedCoin} onSelect={handleCoinChange} />
+      <label>
+        Interval:
+        <select value={interval} onChange={e => setInterval(e.target.value)}>
+          <option value="1m">1 Minute</option>
+          <option value="3m">3 Minutes</option>
+          <option value="5m">5 Minutes</option>
+        </select>
+      </label>
       <div className="chart-container">
         <CandlestickChart data={chartData} />
       </div>
