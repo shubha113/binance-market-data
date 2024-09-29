@@ -17,35 +17,47 @@ const App = () => {
     // When new data arrives from WebSocket, update chartData
     if (data.length > 0) {
       setChartData(data); // Update chart data with live data
-      localStorage.setItem(selectedCoin, JSON.stringify(data)); // Store the latest data
+      localStorage.setItem(selectedCoin, JSON.stringify(data));
     }
   }, [data, selectedCoin]);
 
   const handleCoinChange = (coin) => {
-    setSelectedCoin(coin); // Update the selected coin
-    setChartData([]); // Clear the chart data immediately to avoid mixing
-  };
+    // Clear chart data before switching to prevent mixing data from different coins
+    setChartData([]); 
+    setSelectedCoin(coin);
 
-  useEffect(() => {
-    const savedData = localStorage.getItem(selectedCoin);
+    // Check if there's existing data in localStorage for the selected coin
+    const savedData = localStorage.getItem(coin);
     if (savedData) {
       setChartData(JSON.parse(savedData));
     }
-  }, [selectedCoin]);
+  };
 
   return (
     <div className="app-container">
       <h1>Binance Market Data</h1>
-      <label htmlFor="coin-selector">Select Coin:</label>
-      <CoinSelector coins={coins} selectedCoin={selectedCoin} onSelect={handleCoinChange} />
-      <label>
-        Interval:
-        <select value={interval} onChange={e => setInterval(e.target.value)}>
-          <option value="1m">1 Minute</option>
-          <option value="3m">3 Minutes</option>
-          <option value="5m">5 Minutes</option>
-        </select>
-      </label>
+      
+        <label htmlFor="coin-selector">Select Coin:</label>
+        <CoinSelector 
+          coins={coins} 
+          selectedCoin={selectedCoin} 
+          onSelect={handleCoinChange} 
+          id="coin-selector"
+        />
+        
+        <label htmlFor="interval-selector">
+          Interval:
+          <select 
+            id="interval-selector"
+            value={interval} 
+            onChange={e => setInterval(e.target.value)}
+          >
+            <option value="1m">1 Minute</option>
+            <option value="3m">3 Minutes</option>
+            <option value="5m">5 Minutes</option>
+          </select>
+        </label>
+      
       <div className="chart-container">
         <CandlestickChart data={chartData} />
       </div>
