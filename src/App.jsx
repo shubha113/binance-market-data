@@ -5,7 +5,7 @@ import CoinSelector from './component/CoinSelector';
 import './App.css';
 
 const App = () => {
-  const coins = ['ETH/USDT', 'BNB/USDT', 'DOT/USDT'];
+  const coins = ['ethusdt', 'bnbusdt', 'dotusdt'];
   const [selectedCoin, setSelectedCoin] = useState(coins[0]);
   const [interval, setInterval] = useState('1m');
   const [chartData, setChartData] = useState([]);
