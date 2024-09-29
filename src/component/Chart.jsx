@@ -7,39 +7,44 @@ const CandlestickChart = ({ data }) => {
   const candlestickSeriesRef = useRef(null);
 
   useEffect(() => {
-    if (!chartRef.current) {
-      chartRef.current = createChart(chartContainerRef.current, {
-        width: chartContainerRef.current.offsetWidth,
-        height: chartContainerRef.current.offsetHeight,
-        layout: {
-          backgroundColor: '#ffffff',
-          textColor: '#000000',
-        },
-        priceScale: {
-          scaleMargins: {
-            top: 0.1,
-            bottom: 0.1,
-          },
-          autoScale: false, 
-          borderColor: '#cccccc',
-        },
-        timeScale: {
-          timeVisible: true,
-          secondsVisible: false,
-        },
-      });
-
-      candlestickSeriesRef.current = chartRef.current.addCandlestickSeries({
-        upColor: '#4caf50',
-        downColor: '#f44336',
-        borderDownColor: '#f44336',
-        borderUpColor: '#4caf50',
-        wickDownColor: '#f44336',
-        wickUpColor: '#4caf50',
-      });
+    // Destroy the previous chart instance when the data changes to prevent mixing data from different coins
+    if (chartRef.current) {
+      chartRef.current.remove(); 
+      chartRef.current = null;
     }
 
-    // to ensure valid data with correct timestamp handling
+    // Create a new chart instance
+    chartRef.current = createChart(chartContainerRef.current, {
+      width: chartContainerRef.current.offsetWidth,
+      height: chartContainerRef.current.offsetHeight,
+      layout: {
+        backgroundColor: 'transparent',
+        textColor: '#000000',
+      },
+      priceScale: {
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.1,
+        },
+        autoScale: false, 
+        borderColor: '#cccccc',
+      },
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+      },
+    });
+
+    candlestickSeriesRef.current = chartRef.current.addCandlestickSeries({
+      upColor: '#4caf50',
+      downColor: '#f44336',
+      borderDownColor: '#f44336',
+      borderUpColor: '#4caf50',
+      wickDownColor: '#f44336',
+      wickUpColor: '#4caf50',
+    });
+
+    // Ensure valid data with correct timestamp handling
     const validData = data
       .filter(item => item.time && !isNaN(item.time) && item.time > 0)
       .map(item => ({
@@ -55,25 +60,21 @@ const CandlestickChart = ({ data }) => {
       index === self.findIndex(t => t.time === item.time)
     );
 
-    // to determine price range
-    const priceMin = Math.min(...uniqueData.map(item => item.low)) || 0; // Ensure minimum is a valid price
-    const priceMax = Math.max(...uniqueData.map(item => item.high)) * 1.1; // Max price with a buffer
+    // Update price range
+    const priceMin = Math.min(...uniqueData.map(item => item.low)) || 0;
+    const priceMax = Math.max(...uniqueData.map(item => item.high)) * 1.1;
 
-    // to update price scale
-    if (chartRef.current) {
-      chartRef.current.applyOptions({
-        priceScale: {
-          autoScale: false,
-          minValue: priceMin,
-          maxValue: priceMax,
-        },
-      });
-    }
+    // Update price scale
+    chartRef.current.applyOptions({
+      priceScale: {
+        autoScale: false,
+        minValue: priceMin,
+        maxValue: priceMax,
+      },
+    });
 
-    // to update chart with new data
-    if (candlestickSeriesRef.current) {
-      candlestickSeriesRef.current.setData(uniqueData);
-    }
+    // Set the new data on the chart
+    candlestickSeriesRef.current.setData(uniqueData);
 
     const handleResize = () => {
       chartRef.current.applyOptions({
